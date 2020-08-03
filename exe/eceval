@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+require_relative '../lib/eceval/cli'
+
+ARGV << '--help' if ARGV.empty?
+Eceval::CLI.run
