@@ -52,10 +52,12 @@ Contributing
 
 Open PRs and issues on GitHub.
 
-It would be cool to get this working for other languages, but right now it's
-hard-coded for Ruby.
+ - It would be cool to get this working for other languages, but right now it's
+   hard-coded for Ruby.
 
-Sandboxing would be good too, but I don't know how feasible it is.
+ - Sandboxing would be good, but I don't know how feasible it is.
+
+ - Should handle multi-line STDOUT output
 
 
 License

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require 'stringio'
 
 ECEVAL_MAIN_BINDING = binding
 
@@ -6,6 +7,7 @@ module Eceval
   EVAL_MARKER = "#=>"
   CONTINUATION_MARKER = "#=*"
   EVAL_EXCEPTION_MARKER = "#=> !!!"
+  STDOUT_MARKER = "# outputs:"
   BEGIN_CODE_BLOCK = '```ruby'
   END_CODE_BLOCK = '```'
   NEW_SCOPE_DIRECTIVE = '# eceval: new_scope'
@@ -29,6 +31,7 @@ module Eceval
       @lineno = lineno
       @lines_consumed = 0
       @chunk = nil
+      @eval_stdout = StringIO.new
     end
 
     def process_line(line)
@@ -69,9 +72,6 @@ module Eceval
         end
       end
 
-      def reset_scope
-      end
-
       def process_chunk_line(line)
         @chunk << line
 
@@ -83,6 +83,13 @@ module Eceval
           ex = consume_chunk(rescue_exceptions: true)
           begin_chunk
           format_exception(line.rstrip, ex)
+        elsif line.rstrip.end_with?(STDOUT_MARKER)
+          consume_chunk
+          begin_chunk
+          output = @eval_stdout.string.chomp
+          @eval_stdout.string = ''
+
+          line + ' ' + output
         else
           line
         end
@@ -90,9 +97,11 @@ module Eceval
 
       def consume_chunk(rescue_exceptions: false)
         old_chunk = @chunk
+        old_stdout = $stdout
         @chunk = nil
 
         begin
+          $stdout = @eval_stdout
           old_chunk.evaluate
         rescue Exception => ex
           if rescue_exceptions
@@ -100,6 +109,8 @@ module Eceval
           else
             raise
           end
+        ensure
+          $stdout = old_stdout
         end
       end
 

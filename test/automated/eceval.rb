@@ -50,6 +50,23 @@ context Eceval do
     )
   end
 
+  test "outputs stdout when directed to" do
+    assert_augments_to(
+      <<~END_INPUT, __LINE__,
+        ```ruby
+        puts "some output"
+        # outputs:
+        ```
+      END_INPUT
+      <<~END_EXPECTED_OUTPUT
+        ```ruby
+        puts "some output"
+        # outputs: some output
+        ```
+      END_EXPECTED_OUTPUT
+    )
+  end
+
   test "fails if there is supposed to be an exception, but there isn't" do
     message = <<~END_MESSAGE.strip.gsub(/\s+/, ' ')
       Expected an exception at `#{__FILE__}:2` but none was raised. Instead, the
