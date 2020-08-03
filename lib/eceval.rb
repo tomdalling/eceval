@@ -4,6 +4,7 @@ ECEVAL_MAIN_BINDING = binding
 
 module Eceval
   EVAL_MARKER = "#=>"
+  CONTINUATION_MARKER = "#=*"
   EVAL_EXCEPTION_MARKER = "#=> !!!"
   BEGIN_CODE_BLOCK = '```ruby'
   END_CODE_BLOCK = '```'
@@ -81,7 +82,7 @@ module Eceval
         elsif line.rstrip.end_with?(EVAL_EXCEPTION_MARKER)
           ex = consume_chunk(rescue_exceptions: true)
           begin_chunk
-          line.rstrip + ' ' + format_exception(ex)
+          format_exception(line.rstrip, ex)
         else
           line
         end
@@ -102,14 +103,21 @@ module Eceval
         end
       end
 
-      def format_exception(ex)
+      def format_exception(line, ex)
         unless ex.is_a?(Exception)
           raise NoExceptionRaised, "Expected an exception at #{current_pos}" \
             " but none was raised. Instead, the code evaluated to: " +
             ex.inspect
         end
 
-        "#{ex.class}: #{ex.message}"
+        # for multiline exception messages, indent them to line up with the first line
+        indentation = CONTINUATION_MARKER + ' '*(line.length - CONTINUATION_MARKER.length + 1)
+        ex_message = ex.message
+          .lines
+          .map(&:chomp)
+          .join("\n" + indentation)
+
+        "#{line} #{ex.class}: #{ex_message}"
       end
 
       def current_pos

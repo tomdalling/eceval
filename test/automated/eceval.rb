@@ -194,4 +194,23 @@ context Eceval do
       END_EXPECTED_OUTPUT
     )
   end
+
+  test "handles multiline exception messages" do
+    assert_augments_to(
+      <<~'END_INPUT', __LINE__,
+        ```ruby
+        raise "AAA\nBBB\nCCC"
+        #=> !!!
+        ```
+      END_INPUT
+      <<~'END_EXPECTED_OUTPUT'
+        ```ruby
+        raise "AAA\nBBB\nCCC"
+        #=> !!! RuntimeError: AAA
+        #=*     BBB
+        #=*     CCC
+        ```
+      END_EXPECTED_OUTPUT
+    )
+  end
 end
